@@ -1,0 +1,29 @@
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+
+# Exception for environments (required for CI/CD)
+ !environments/**/*.tfvars
+
+# Backup files
+*.backup
+*.bak
+
+# Log files
+*.log
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Provider lock (opcional - descomenta si quieres locking de versiones)
+# .terraform.lock.hcl
+.agents
