@@ -45,13 +45,43 @@ variable "db_password" {
 }
 
 variable "lambda_producer_arn" {
-  description = "ARN de la lambda producer existente (dejar vacío para crear)"
+  description = "ARN de la lambda producer existente"
   type        = string
   default     = ""
 }
 
 variable "lambda_consumer_arn" {
-  description = "ARN de la lambda consumer existente (dejar vacío para crear)"
+  description = "ARN de la lambda consumer existente"
   type        = string
   default     = ""
+}
+
+variable "lambda_producer_name" {
+  description = "Nombre de la lambda producer"
+  type        = string
+  default     = "neopay-pagos-producer-dev"
+}
+
+variable "lambda_consumer_name" {
+  description = "Nombre de la lambda consumer"
+  type        = string
+  default     = "neopay-pagos-consumer-dev"
+}
+
+variable "lambda_runtime" {
+  description = "Runtime de las lambdas"
+  type        = string
+  default     = "python3.12"
+}
+
+variable "lambda_memory" {
+  description = "Memoria en MB para las lambdas"
+  type        = number
+  default     = 256
+}
+
+variable "lambda_timeout" {
+  description = "Timeout en segundos para las lambdas"
+  type        = number
+  default     = 30
 }

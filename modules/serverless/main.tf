@@ -90,6 +90,58 @@ resource "aws_iam_role_policy" "consumer_sqs" {
   })
 }
 
+resource "aws_lambda_function" "producer" {
+  count            = var.lambda_producer_arn == "" ? 1 : 0
+  function_name    = var.lambda_producer_name
+  filename         = "${path.module}/placeholder.py"
+  source_code_hash = filebase64sha256("${path.module}/placeholder.py")
+  role             = aws_iam_role.producer.arn
+  runtime          = "python3.12"
+  handler          = "main.handler"
+  timeout          = 30
+  memory_size      = 256
+
+  environment {
+    variables = {
+      QUEUE_URL = aws_sqs_queue.pagos.url
+    }
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_lambda_function" "consumer" {
+  count            = var.lambda_consumer_arn == "" ? 1 : 0
+  function_name    = var.lambda_consumer_name
+  filename         = "${path.module}/placeholder.py"
+  source_code_hash = filebase64sha256("${path.module}/placeholder.py")
+  role             = aws_iam_role.consumer.arn
+  runtime          = "python3.12"
+  handler          = "main.handler"
+  timeout          = 60
+  memory_size      = 256
+  vpc_config {
+    subnet_ids         = var.private_compute_subnet_ids
+    security_group_ids = [var.lambda_security_group_id]
+  }
+
+  environment {
+    variables = {
+      DB_HOST     = var.db_host
+      DB_PORT     = var.db_port
+      DB_NAME     = var.db_name
+      DB_USER     = var.db_username
+      DB_PASSWORD = var.db_password
+    }
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
 resource "aws_apigatewayv2_api" "pagos" {
   name          = "neopay-pagos-api-${var.environment}"
   protocol_type = "HTTP"
@@ -107,33 +159,38 @@ resource "aws_apigatewayv2_stage" "default" {
   auto_deploy = true
 }
 
+locals {
+  producer_arn = var.lambda_producer_arn != "" ? var.lambda_producer_arn : aws_lambda_function.producer[0].arn
+  consumer_arn = var.lambda_consumer_arn != "" ? var.lambda_consumer_arn : aws_lambda_function.consumer[0].arn
+}
+
 resource "aws_lambda_permission" "apigw_invoke_producer" {
-  count         = var.lambda_producer_arn != "" ? 1 : 0
+  count         = var.lambda_producer_arn == "" ? 1 : 0
   statement_id  = "AllowInvokeFromHttpApi"
   action        = "lambda:InvokeFunction"
-  function_name = split(":", var.lambda_producer_arn)[6]
+  function_name = var.lambda_producer_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.pagos.execution_arn}/*/*"
 }
 
 resource "aws_apigatewayv2_integration" "producer" {
-  count                  = var.lambda_producer_arn != "" ? 1 : 0
+  count                  = var.lambda_producer_arn == "" ? 1 : 0
   api_id                 = aws_apigatewayv2_api.pagos.id
   integration_type       = "AWS_PROXY"
-  integration_uri        = var.lambda_producer_arn
+  integration_uri        = local.producer_arn
   payload_format_version = "2.0"
 }
 
 resource "aws_apigatewayv2_route" "post_pagos" {
-  count     = var.lambda_producer_arn != "" ? 1 : 0
+  count     = var.lambda_producer_arn == "" ? 1 : 0
   api_id    = aws_apigatewayv2_api.pagos.id
   route_key = "POST /pagos"
   target    = "integrations/${aws_apigatewayv2_integration.producer[0].id}"
 }
 
 resource "aws_lambda_event_source_mapping" "consumer" {
-  count            = var.lambda_consumer_arn != "" ? 1 : 0
+  count            = var.lambda_consumer_arn == "" ? 1 : 0
   event_source_arn = aws_sqs_queue.pagos.arn
-  function_name    = var.lambda_consumer_arn
+  function_name    = local.consumer_arn
   batch_size       = 5
 }
