@@ -93,19 +93,13 @@ resource "aws_iam_role_policy" "consumer_sqs" {
 resource "aws_lambda_function" "producer" {
   count            = var.lambda_producer_arn == "" ? 1 : 0
   function_name    = var.lambda_producer_name
-  filename         = "${path.module}/placeholder.py"
-  source_code_hash = filebase64sha256("${path.module}/placeholder.py")
+  filename         = "${path.module}/lambda.zip"
+  source_code_hash = filebase64sha256("${path.module}/lambda.zip")
   role             = aws_iam_role.producer.arn
-  runtime          = "python3.12"
+  runtime          = var.lambda_runtime
   handler          = "main.handler"
-  timeout          = 30
-  memory_size      = 256
-
-  environment {
-    variables = {
-      QUEUE_URL = aws_sqs_queue.pagos.url
-    }
-  }
+  timeout          = var.lambda_timeout
+  memory_size      = var.lambda_memory
 
   lifecycle {
     create_before_destroy = true
@@ -115,26 +109,16 @@ resource "aws_lambda_function" "producer" {
 resource "aws_lambda_function" "consumer" {
   count            = var.lambda_consumer_arn == "" ? 1 : 0
   function_name    = var.lambda_consumer_name
-  filename         = "${path.module}/placeholder.py"
-  source_code_hash = filebase64sha256("${path.module}/placeholder.py")
+  filename         = "${path.module}/lambda.zip"
+  source_code_hash = filebase64sha256("${path.module}/lambda.zip")
   role             = aws_iam_role.consumer.arn
-  runtime          = "python3.12"
+  runtime          = var.lambda_runtime
   handler          = "main.handler"
-  timeout          = 60
-  memory_size      = 256
+  timeout          = var.lambda_timeout
+  memory_size      = var.lambda_memory
   vpc_config {
     subnet_ids         = var.private_compute_subnet_ids
     security_group_ids = [var.lambda_security_group_id]
-  }
-
-  environment {
-    variables = {
-      DB_HOST     = var.db_host
-      DB_PORT     = var.db_port
-      DB_NAME     = var.db_name
-      DB_USER     = var.db_username
-      DB_PASSWORD = var.db_password
-    }
   }
 
   lifecycle {
