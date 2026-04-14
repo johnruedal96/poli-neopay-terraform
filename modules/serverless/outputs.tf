@@ -1,6 +1,6 @@
 output "api_invoke_url" {
   description = "URL base del HTTP API (POST /pagos)"
-  value       = aws_apigatewayv2_stage.default[0].invoke_url
+  value       = aws_apigatewayv2_stage.default.invoke_url
 }
 
 output "api_id" {

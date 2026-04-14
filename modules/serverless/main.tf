@@ -128,7 +128,7 @@ resource "aws_apigatewayv2_route" "post_pagos" {
   count     = var.lambda_producer_arn != "" ? 1 : 0
   api_id    = aws_apigatewayv2_api.pagos.id
   route_key = "POST /pagos"
-  target    = "integrations/${aws_apigatewayv2_integration.producer.id}"
+  target    = "integrations/${aws_apigatewayv2_integration.producer[0].id}"
 }
 
 resource "aws_lambda_event_source_mapping" "consumer" {
