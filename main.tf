@@ -31,3 +31,27 @@ module "compute" {
   multi_az_db                = var.multi_az_db
   db_password                = var.db_password
 }
+
+locals {
+  db_endpoint_parts = split(":", module.compute.db_endpoint)
+  db_host           = local.db_endpoint_parts[0]
+  db_port           = local.db_endpoint_parts[1]
+}
+
+module "serverless" {
+  source = "./modules/serverless"
+
+  environment                = var.environment
+  vpc_id                     = module.network.vpc_id
+  private_compute_subnet_ids = module.network.private_compute_subnet_ids
+  lambda_security_group_id   = module.security.lambda_sg_id
+
+  db_host     = local.db_host
+  db_port     = local.db_port
+  db_name     = module.compute.db_name
+  db_username = module.compute.db_username
+  db_password = var.db_password
+
+  lambda_producer_arn = var.lambda_producer_arn
+  lambda_consumer_arn = var.lambda_consumer_arn
+}

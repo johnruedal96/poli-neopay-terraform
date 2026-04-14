@@ -45,3 +45,15 @@ variable "db_password" {
   type        = string
   sensitive   = true
 }
+
+variable "lambda_producer_arn" {
+  description = "ARN of existing producer lambda (empty to skip)"
+  type        = string
+  default     = ""
+}
+
+variable "lambda_consumer_arn" {
+  description = "ARN of existing consumer lambda (empty to skip)"
+  type        = string
+  default     = ""
+}

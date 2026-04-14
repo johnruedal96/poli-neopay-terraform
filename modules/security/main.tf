@@ -70,7 +70,7 @@ resource "aws_security_group" "app" {
 # Database Security Group
 resource "aws_security_group" "db" {
   name        = "neopay-db-sg-${var.environment}"
-  description = "Allow traffic from App"
+  description = "Allow traffic from App and Lambda"
   vpc_id      = var.vpc_id
 
   ingress {
@@ -80,8 +80,34 @@ resource "aws_security_group" "db" {
     security_groups = [aws_security_group.app.id]
   }
 
+  ingress {
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
+    security_groups = [aws_security_group.lambda.id]
+  }
+
   tags = {
     Name        = "neopay-db-sg-${var.environment}"
+    Environment = var.environment
+  }
+}
+
+# Lambda Security Group
+resource "aws_security_group" "lambda" {
+  name        = "neopay-lambda-sg-${var.environment}"
+  description = "Security group for Lambda functions"
+  vpc_id      = var.vpc_id
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name        = "neopay-lambda-sg-${var.environment}"
     Environment = var.environment
   }
 }
@@ -128,4 +154,8 @@ output "db_sg_id" {
 
 output "ec2_instance_profile_name" {
   value = aws_iam_instance_profile.ec2_profile.name
+}
+
+output "lambda_sg_id" {
+  value = aws_security_group.lambda.id
 }
