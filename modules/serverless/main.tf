@@ -171,6 +171,8 @@ resource "aws_lambda_permission" "apigw_invoke_producer" {
   function_name = var.lambda_producer_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.pagos.execution_arn}/*/*"
+
+  depends_on = [aws_lambda_function.producer]
 }
 
 resource "aws_apigatewayv2_integration" "producer" {
@@ -179,6 +181,8 @@ resource "aws_apigatewayv2_integration" "producer" {
   integration_type       = "AWS_PROXY"
   integration_uri        = local.producer_arn
   payload_format_version = "2.0"
+
+  depends_on = [aws_lambda_function.producer]
 }
 
 resource "aws_apigatewayv2_route" "post_pagos" {
@@ -186,6 +190,8 @@ resource "aws_apigatewayv2_route" "post_pagos" {
   api_id    = aws_apigatewayv2_api.pagos.id
   route_key = "POST /pagos"
   target    = "integrations/${aws_apigatewayv2_integration.producer[0].id}"
+
+  depends_on = [aws_apigatewayv2_integration.producer]
 }
 
 resource "aws_lambda_event_source_mapping" "consumer" {
