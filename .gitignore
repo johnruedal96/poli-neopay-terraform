@@ -24,6 +24,6 @@
 .DS_Store
 Thumbs.db
 
-# Provider lock (opcional - descomenta si quieres locking de versiones)
-# .terraform.lock.hcl
+# Provider lock
+.terraform.lock.hcl
 .agents
