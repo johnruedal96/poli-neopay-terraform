@@ -32,7 +32,7 @@ resource "aws_cloudwatch_metric_alarm" "producer_latency_p99" {
   metric_name         = "Duration"
   namespace           = "AWS/Lambda"
   period              = 300
-  statistic           = "p99"
+  extended_statistic  = "p99"
   threshold           = 2000
   alarm_description   = "This metric monitors producer lambda p99 latency"
   alarm_actions       = [aws_sns_topic.alerts.arn]
@@ -66,7 +66,7 @@ resource "aws_cloudwatch_metric_alarm" "consumer_latency_p99" {
   metric_name         = "Duration"
   namespace           = "AWS/Lambda"
   period              = 300
-  statistic           = "p99"
+  extended_statistic  = "p99"
   threshold           = 5000
   alarm_description   = "This metric monitors consumer lambda p99 latency"
   alarm_actions       = [aws_sns_topic.alerts.arn]
