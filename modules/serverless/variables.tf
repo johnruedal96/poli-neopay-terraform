@@ -85,3 +85,15 @@ variable "lambda_timeout" {
   type        = number
   default     = 30
 }
+
+variable "aws_region" {
+  description = "AWS Region"
+  type        = string
+  default     = "us-east-1"
+}
+
+variable "alert_email" {
+  description = "Email para alertas en producción"
+  type        = string
+  default     = ""
+}

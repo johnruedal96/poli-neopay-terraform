@@ -53,7 +53,13 @@ variable "lambda_producer_arn" {
 }
 
 variable "lambda_consumer_arn" {
-  description = "ARN of existing consumer lambda (empty to skip)"
+  description = "ARN of existing consumer lambda"
+  type        = string
+  default     = ""
+}
+
+variable "alert_email" {
+  description = "Email for alerts in production"
   type        = string
   default     = ""
 }

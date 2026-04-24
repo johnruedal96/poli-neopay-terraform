@@ -45,6 +45,7 @@ module "serverless" {
   vpc_id                     = module.network.vpc_id
   private_compute_subnet_ids = module.network.private_compute_subnet_ids
   lambda_security_group_id   = module.security.lambda_sg_id
+  aws_region                 = var.aws_region
 
   db_host     = local.db_host
   db_port     = local.db_port
@@ -54,4 +55,8 @@ module "serverless" {
 
   lambda_producer_arn = var.lambda_producer_arn
   lambda_consumer_arn = var.lambda_consumer_arn
+
+  lambda_producer_name = "neopay-pagos-producer-${var.environment}"
+  lambda_consumer_name = "neopay-pagos-consumer-${var.environment}"
+  alert_email          = var.alert_email
 }
